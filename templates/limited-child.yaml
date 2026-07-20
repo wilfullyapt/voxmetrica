@@ -1,0 +1,35 @@
+speaker_id: REPLACE_ME
+display_name: REPLACE_ME
+mode: allowlist
+updated_by: root
+resources:
+  tools:
+    allow: [web_search, web_extract, tts, clarify, vision_analyze]
+    deny:
+      - terminal
+      - execute_code
+      - memory
+      - cronjob
+      - delegate_task
+      - discord_admin
+      - voxmetrica_enroll
+      - voxmetrica_delete
+      - voxmetrica_set_capabilities
+      - voxmetrica_set_root
+  toolsets:
+    allow: [safe, web, tts, vision]
+    deny: [terminal, file, homeassistant, discord_admin, cronjob, memory, delegation]
+  paths:
+    allow: []
+    deny: ["*"]
+  memory_scopes:
+    allow: []
+    deny: [family_private, couple_private, root]
+  home:
+    allow: []
+    deny: ["*"]
+notes_for_model: |
+  Limited-access speaker (template starting point — edit per person).
+  Friendly, short answers. Homework-style help OK.
+  No private finances, crypto, or home admin.
+  If asked for denied resources, refuse and suggest asking a household admin / root.

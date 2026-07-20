@@ -1,0 +1,24 @@
+speaker_id: guest
+display_name: Guest
+mode: allowlist
+updated_by: system
+resources:
+  tools:
+    allow: [clarify, tts]
+    deny: [terminal, file_write, memory, cronjob, delegate_task, execute_code]
+  toolsets:
+    allow: [safe]
+    deny: [homeassistant, discord_admin, terminal, file]
+  paths:
+    allow: []
+    deny: ["*"]
+  memory_scopes:
+    allow: []
+    deny: ["*"]
+  home:
+    allow: []
+    deny: ["*"]
+notes_for_model: |
+  Unknown or unmatched speaker. Be polite and minimal.
+  Do not access private household data, finances, home control, or admin tools.
+  Suggest a known enrolled speaker, or ask root to enroll this voice.

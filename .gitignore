@@ -1,0 +1,33 @@
+# Runtime / private — never commit household biometrics or claims
+data/
+!data/.gitkeep
+
+# Embeddings, seals, claims, audit
+**/control/root.seal
+**/control/root.meta.json
+**/control/root_embeddings/*
+!**/control/root_embeddings/.gitkeep
+**/gallery/*
+!**/gallery/.gitkeep
+!**/gallery/index.json.example
+**/claims/*
+**/enroll_raw/*
+**/audit/*
+**/.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Local overrides
+.env
+config.local.yaml

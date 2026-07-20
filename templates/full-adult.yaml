@@ -1,0 +1,25 @@
+speaker_id: REPLACE_ME
+display_name: REPLACE_ME
+mode: denylist
+updated_by: root
+resources:
+  tools:
+    allow: []
+    deny:
+      - voxmetrica_set_root
+  toolsets:
+    allow: ["*"]
+    deny: []
+  paths:
+    allow: ["*"]
+    deny: []   # still cannot rewrite control plane without root
+  memory_scopes:
+    allow: ["*"]
+    deny: [root]
+  home:
+    allow: ["*"]
+    deny: []
+notes_for_model: |
+  Trusted adult speaker. Broad access to household assistant features.
+  Cannot rewrite VoxMetrica control plane or other speakers' capabilities
+  unless speaking as root (sealed) or via local recovery CLI.

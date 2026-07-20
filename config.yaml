@@ -1,0 +1,25 @@
+# VoxMetrica runtime config (committed defaults — no personal data)
+version: 1
+# Use "data" for package-local store, or set VOXMETRICA_ROOT / absolute path
+data_root: data
+
+identify:
+  threshold: 0.75
+  backend: auto            # auto | speechbrain | hash_stub
+  speechbrain_source: speechbrain/spkrec-ecapa-voxceleb
+  claim_ttl_seconds: 900
+
+enroll:
+  min_clips: 1
+  delete_raw_after_embed: true
+  default_template: full-adult
+
+guest:
+  template: guest-default
+
+security:
+  fail_closed_on_seal_break: true
+  allow_local_cli_root: true
+
+audit:
+  sqlite_path: audit/events.sqlite
