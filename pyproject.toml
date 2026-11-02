@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voxmetrica"
+version = "0.2.0"
+description = "Family vocal biometrics + per-voice capability memory for Hermes"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "WilfullyApt" }]
+keywords = ["voice", "biometrics", "hermes", "speaker-identification"]
+dependencies = [
+  "pyyaml>=6.0",
+  "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4",
+  "ruff>=0.4",
+]
+speechbrain = [
+  "torch",
+  "torchaudio",
+  "speechbrain",
+]
+
+[project.scripts]
+voxmetrica = "voxmetrica.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["voxmetrica*"]
+exclude = ["tests*", "plugin*", "scripts*", "data*"]
+
+[tool.setuptools.package-data]
+voxmetrica = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]

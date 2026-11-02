@@ -19,9 +19,9 @@ fi
 python3 - <<PY
 import json, sys
 sys.path.insert(0, "${PKG}")
-from lib.control_plane import ControlPlane
-from lib.claims import ClaimStore
-from lib.paths import get_data_root
+from voxmetrica.control_plane import ControlPlane
+from voxmetrica.claims import ClaimStore
+from voxmetrica.paths import get_data_root
 
 cp = ControlPlane(get_data_root())
 claim = cp.whoami_from_audio("${AUDIO}")

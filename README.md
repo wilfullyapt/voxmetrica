@@ -6,22 +6,50 @@ Family **vocal biometrics** + **per-voice capability memory** for Hermes Agent.
 - **Immutable root** — sealed control plane can override any biometric's memory
 - **Plugin** — tools, hooks, skill under `plugin/`
 - **Runtime data** — `./data` (or `VOXMETRICA_ROOT`); gitignored
+- **Claim v1** — `matched | clarify | unknown` with dual threshold + margin
+
+## Install
+
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+# Real ECAPA embeddings (hub / GPU):
+# pip install -e ".[speechbrain]"
+```
 
 ## Quick start
 
 ```bash
-python3 scripts/voxmetrica_cli.py setup
-python3 scripts/voxmetrica_cli.py bootstrap-root --display-name "Root"
+export VOXMETRICA_ROOT="${VOXMETRICA_ROOT:-$HOME/.local/share/voxmetrica}"
+voxmetrica setup
+voxmetrica bootstrap-root --display-name "Root"
 
-# Enroll (hash_stub embeddings until SpeechBrain is installed)
-python3 scripts/voxmetrica_cli.py enroll \
+# Blank house: voice names itself (min 3 clips by default)
+voxmetrica enroll-self \
+  --display-name "Adult One" \
+  --audio /path/to/clip1.wav \
+  --audio /path/to/clip2.wav \
+  --audio /path/to/clip3.wav
+
+# Or root-gated enroll
+voxmetrica enroll \
   --speaker-id adult1 --display-name "Adult One" \
   --audio /path/to/clip.wav --template full-adult
 
-python3 scripts/voxmetrica_cli.py status
-python3 scripts/voxmetrica_cli.py whoami --audio /path/to/clip.wav
-python3 scripts/voxmetrica_cli.py check --speaker-id adult1 --kind tools --name terminal
+voxmetrica status
+voxmetrica whoami --audio /path/to/clip.wav
+voxmetrica check --speaker-id adult1 --kind tools --name terminal
 ```
+
+`hash_stub` embeddings are **dev only**. Set `production: true` in config to refuse them.
+
+## Decision bands (defaults — calibrate on household mics)
+
+| Band | Cosine (ECAPA) | Outcome |
+|------|----------------|---------|
+| Accept | ≥ 0.75 and margin ≥ 0.05 | `matched` |
+| Clarify | 0.55–0.75 or thin margin | `clarify` |
+| Reject | < 0.55 | `unknown` / guest |
 
 ## Install Hermes plugin
 
@@ -32,13 +60,6 @@ hermes plugins enable voxmetrica
 # restart gateway if needed
 ```
 
-Set a durable data root for household use (do not commit it):
-
-```bash
-export VOXMETRICA_ROOT="$HOME/.local/share/voxmetrica"
-python3 scripts/voxmetrica_cli.py setup
-```
-
 ## Layout
 
 ```
@@ -46,18 +67,20 @@ voxmetrica/
   DESIGN.md
   config.yaml          # defaults only
   templates/           # enroll starters
-  lib/                 # Python core
+  voxmetrica/          # Python package
   plugin/              # Hermes plugin
-  scripts/             # CLI + STT wrapper
-  data/                # runtime (gitignored): gallery, control, claims, audit
+  scripts/             # CLI shim + STT wrapper
+  tests/
+  data/                # runtime (gitignored)
 ```
 
 ## Security notes
 
 - Root ops require local CLI recovery or a verified root voice claim
-- `hash_stub` is for scaffolding only — install SpeechBrain for real fingerprints
+- `hash_stub` is scaffolding only — install SpeechBrain for real fingerprints
 - Never commit `data/`, seals, embeddings, claims, or audit DBs
 - Raw enroll audio should be deleted after embed
+- Prefer false reject + clarify over false accept for privileged tools
 
 ## Requirements
 

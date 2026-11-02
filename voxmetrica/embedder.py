@@ -7,7 +7,8 @@ from typing import Any
 
 import numpy as np
 
-from .paths import load_config, get_data_root
+from .paths import get_data_root, load_config
+from .score import cosine
 
 
 class Embedder:
@@ -21,34 +22,45 @@ class Embedder:
         self.root = root or get_data_root()
         cfg = load_config(self.root)
         self.backend = backend or cfg.get("identify", {}).get("backend", "auto")
+        self.production = bool(cfg.get("production", False))
         self._sb_model = None
         self._resolved = None
 
     def resolve_backend(self) -> str:
         if self._resolved:
             return self._resolved
-        if self.backend == "hash_stub":
+
+        requested = self.backend
+        if requested == "hash_stub":
+            if self.production:
+                raise RuntimeError(
+                    "hash_stub is forbidden when production: true — install SpeechBrain "
+                    "(pip install 'voxmetrica[speechbrain]') and set identify.backend: speechbrain|auto"
+                )
             self._resolved = "hash_stub"
             return self._resolved
-        if self.backend in ("auto", "speechbrain"):
+
+        if requested in ("auto", "speechbrain"):
             try:
                 import speechbrain  # noqa: F401
 
                 self._resolved = "speechbrain"
                 return self._resolved
             except Exception:
-                if self.backend == "speechbrain":
+                if requested == "speechbrain" or self.production:
                     raise RuntimeError(
-                        "speechbrain requested but not installed. "
-                        "pip install speechbrain torch torchaudio"
-                    )
+                        "speechbrain required (production or explicit backend) but not installed. "
+                        "pip install 'voxmetrica[speechbrain]' or torch/torchaudio/speechbrain"
+                    ) from None
                 self._resolved = "hash_stub"
                 return self._resolved
+
+        if self.production:
+            raise RuntimeError(f"unknown embed backend in production: {requested}")
         self._resolved = "hash_stub"
         return self._resolved
 
     def _speechbrain_embed(self, wav_path: Path) -> np.ndarray:
-        # Lazy load — heavy
         if self._sb_model is None:
             from speechbrain.inference.speaker import EncoderClassifier
 
@@ -57,25 +69,17 @@ class Embedder:
             )
             savedir = self.root / ".cache" / "speechbrain"
             savedir.mkdir(parents=True, exist_ok=True)
-            self._sb_model = EncoderClassifier.from_hparams(
-                source=source, savedir=str(savedir)
-            )
-        # SpeechBrain expects a path or tensor; use file path helper
-        emb = self._sb_model.encode_batch(
-            self._sb_model.load_audio(str(wav_path))
-        )
+            self._sb_model = EncoderClassifier.from_hparams(source=source, savedir=str(savedir))
+        emb = self._sb_model.encode_batch(self._sb_model.load_audio(str(wav_path)))
         vec = emb.squeeze().detach().cpu().numpy().astype(np.float32)
-        # L2 normalize
         n = np.linalg.norm(vec) + 1e-9
         return (vec / n).astype(np.float32)
 
     def _hash_stub_embed(self, wav_path: Path, dim: int = 192) -> np.ndarray:
         data = wav_path.read_bytes()
-        # Expand hash into a stable unit vector — NOT for production biometrics
         seed = hashlib.sha256(data).digest()
         rng = np.random.RandomState(int.from_bytes(seed[:4], "little"))
         vec = rng.randn(dim).astype(np.float32)
-        # Mix in more hash bits
         for i in range(0, min(len(data), 4096), 32):
             chunk = hashlib.sha256(data[i : i + 32]).digest()
             for j, b in enumerate(chunk):
@@ -87,7 +91,10 @@ class Embedder:
         path = Path(audio_path)
         if not path.exists():
             return {"ok": False, "error": f"audio not found: {path}"}
-        backend = self.resolve_backend()
+        try:
+            backend = self.resolve_backend()
+        except RuntimeError as e:
+            return {"ok": False, "error": str(e), "backend": self.backend}
         try:
             if backend == "speechbrain":
                 vec = self._speechbrain_embed(path)
@@ -108,16 +115,11 @@ class Embedder:
         return dest
 
 
-def cosine(a: np.ndarray, b: np.ndarray) -> float:
-    a = a.astype(np.float32).reshape(-1)
-    b = b.astype(np.float32).reshape(-1)
-    denom = (np.linalg.norm(a) * np.linalg.norm(b)) + 1e-9
-    return float(np.dot(a, b) / denom)
-
-
 def load_embedding(path: Path) -> np.ndarray:
     if path.suffix == ".npy":
         return np.load(path).astype(np.float32).reshape(-1)
-    # json list fallback
     data = json.loads(path.read_text(encoding="utf-8"))
     return np.array(data, dtype=np.float32).reshape(-1)
+
+
+__all__ = ["Embedder", "cosine", "load_embedding"]

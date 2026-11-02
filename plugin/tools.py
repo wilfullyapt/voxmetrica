@@ -12,10 +12,10 @@ _PKG = Path(__file__).resolve().parents[1]
 if str(_PKG) not in sys.path:
     sys.path.insert(0, str(_PKG))
 
-from lib.capabilities import load_capabilities  # noqa: E402
-from lib.claims import ClaimStore  # noqa: E402
-from lib.control_plane import ControlPlane  # noqa: E402
-from lib.paths import get_data_root  # noqa: E402
+from voxmetrica.capabilities import load_capabilities  # noqa: E402
+from voxmetrica.claims import ClaimStore  # noqa: E402
+from voxmetrica.control_plane import ControlPlane  # noqa: E402
+from voxmetrica.paths import get_data_root  # noqa: E402
 
 
 def _j(obj: Any) -> str:
