@@ -22,6 +22,17 @@ enroll:
   allow_self_enroll_when_unknown: true
   root_approve_required: false
 
+adapt:
+  enabled: true
+  require_confirm: true
+  silent_enabled: false
+  silent_min_score: 0.85
+  silent_min_margin: 0.10
+  max_embeddings_per_speaker: 20
+
+sync:
+  hub_url: null
+
 guest:
   template: guest-default
 

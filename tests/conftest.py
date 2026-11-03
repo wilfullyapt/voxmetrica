@@ -41,6 +41,12 @@ def data_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
             "allow_local_cli_root": True,
         },
         "audit": {"sqlite_path": "audit/events.sqlite"},
+        "adapt": {
+            "enabled": True,
+            "require_confirm": True,
+            "silent_enabled": False,
+            "max_embeddings_per_speaker": 20,
+        },
     }
     (root / "config.yaml").write_text(yaml.safe_dump(cfg), encoding="utf-8")
     monkeypatch.setenv("VOXMETRICA_ROOT", str(root))

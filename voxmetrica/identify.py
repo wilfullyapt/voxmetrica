@@ -54,20 +54,50 @@ def _collect_scores(query: np.ndarray, root: Path) -> list[dict[str, Any]]:
         if person.get("active") is False:
             continue
         sid = person["speaker_id"]
+        best = -1.0
+        best_ref = ""
         for p in gal.embedding_files(sid):
             try:
                 ref = load_embedding(p)
-                scores.append(
-                    {
-                        "speaker_id": sid,
-                        "display_name": person.get("display_name", sid),
-                        "is_root": False,
-                        "score": cosine(query, ref),
-                        "ref": str(p),
-                    }
-                )
+                sc = cosine(query, ref)
+                if sc > best:
+                    best = sc
+                    best_ref = str(p)
             except Exception:
                 continue
+        # centroid boost (max of centroid vs best member)
+        cpath = gal.person_dir(sid) / "centroid.npy"
+        if cpath.exists():
+            try:
+                sc = cosine(query, load_embedding(cpath))
+                if sc > best:
+                    best = sc
+                    best_ref = str(cpath)
+            except Exception:
+                pass
+        else:
+            # compute on the fly when multiple embs
+            try:
+                from .adapt import speaker_centroid
+
+                cent = speaker_centroid(sid, root)
+                if cent is not None:
+                    sc = cosine(query, cent)
+                    if sc > best:
+                        best = sc
+                        best_ref = "centroid"
+            except Exception:
+                pass
+        if best >= 0:
+            scores.append(
+                {
+                    "speaker_id": sid,
+                    "display_name": person.get("display_name", sid),
+                    "is_root": False,
+                    "score": float(best),
+                    "ref": best_ref,
+                }
+            )
     return scores
 
 
