@@ -201,12 +201,29 @@ Enforcement: check resource requests against that speaker's file.
 
 ## Implementation phases
 
-1. Scaffold plugin + data dirs + root seal + guest/default caps
-2. Gallery enroll/identify (SpeechBrain ECAPA; hash_stub for dev)
-3. Capability engine allowlist/denylist
-4. STT wrapper + pre_llm_call inject
-5. Root-only set_capabilities + audit
-6. Messaging-platform enrollment UX
+1. Scaffold plugin + data dirs + root seal + guest/default caps **(done @ 44de427)**
+2. Package + CI; **dual-threshold identify** (match / clarify / unknown); claim v1
+3. **Blank-start self-enroll** + admin-confirm policy; min clips + duration gates
+4. Multi-embedding + centroid + **gated adapt** (no backbone fine-tune)
+5. **Signature sync** package (hub SoR, edge pull; embeddings not raw wav)
+6. Capability engine harden + Portunus inject/enforce
+7. Edge clients (narthex / mobile-ami)
+8. Messaging-platform enrollment UX / re-enroll reminders
+
+Estate product detail (flows, FAR/FRR targets, config seeds):
+`reliquary/domains/shipyard/maps/voxmetrica-identify-enroll.md`
+
+## Identify decision (target)
+
+- Embed: SpeechBrain ECAPA (production); hash_stub tests only
+- Score: cosine vs gallery (+ root); prefer margin vs runner-up
+- Bands (calibrate later): accept ≥0.75 + margin; clarify 0.55–0.75; else unknown
+- Empty gallery → unknown → enroll ceremony (voice names itself)
+
+## Ongoing training
+
+Template **adaptation** only: append quality-gated embeddings after confirm (default)
+or optional silent high-confidence match. Do **not** fine-tune ECAPA on household data in v1.
 
 ## Non-goals (v0)
 
@@ -214,3 +231,4 @@ Enforcement: check resource requests against that speaker's file.
 - Cloud biometrics
 - Clinical therapist mode
 - Hard guarantee against physical host compromise
+- Unsupervised enrollment of unknown speech into nearest speaker

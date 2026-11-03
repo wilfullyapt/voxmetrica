@@ -1,8 +1,6 @@
-# Core (always)
+# Core (always) — prefer pyproject extras
 pyyaml>=6.0
 numpy>=1.24
 
-# Real biometrics (optional — install on Hermes host / GPU box)
-# torch
-# torchaudio
-# speechbrain
+# Dev: pip install -e ".[dev]"
+# Real biometrics: pip install -e ".[speechbrain]"

@@ -6,16 +6,39 @@ from typing import Any
 
 import yaml
 
-# Package root = .../voxmetrica (parent of lib/)
+# Package root = repo root (parent of voxmetrica/ package dir)
 _PKG_ROOT = Path(__file__).resolve().parents[1]
 _DEFAULT_ROOT = _PKG_ROOT / "data"
+
+_DEFAULT_CONFIG: dict[str, Any] = {
+    "version": 1,
+    "production": False,
+    "identify": {
+        "accept_threshold": 0.75,
+        "clarify_threshold": 0.55,
+        "min_margin": 0.05,
+        "min_seconds": 1.5,
+        "backend": "auto",
+        "claim_ttl_seconds": 900,
+        "threshold": 0.75,
+    },
+    "enroll": {
+        "min_clips": 3,
+        "delete_raw_after_embed": True,
+        "default_template": "full-adult",
+        "allow_self_enroll_when_unknown": True,
+        "root_approve_required": False,
+    },
+    "guest": {"template": "guest-default"},
+    "security": {"fail_closed_on_seal_break": True, "allow_local_cli_root": True},
+    "audit": {"sqlite_path": "audit/events.sqlite"},
+}
 
 
 def get_data_root() -> Path:
     env = os.environ.get("VOXMETRICA_ROOT")
     if env:
         return Path(env).expanduser().resolve()
-    # Prefer explicit config if present next to package
     cfg_path = _PKG_ROOT / "config.yaml"
     if cfg_path.exists():
         try:
@@ -33,23 +56,22 @@ def get_data_root() -> Path:
 
 def load_config(root: Path | None = None) -> dict[str, Any]:
     root = root or get_data_root()
-    # Config may live in data root or package root
     candidates = [root / "config.yaml", _PKG_ROOT / "config.yaml"]
     path = next((p for p in candidates if p.exists()), None)
     if not path:
-        return {
-            "version": 1,
-            "data_root": str(root),
-            "identify": {"threshold": 0.75, "backend": "auto", "claim_ttl_seconds": 900},
-            "enroll": {"min_clips": 1, "delete_raw_after_embed": True, "default_template": "full-adult"},
-            "guest": {"template": "guest-default"},
-            "security": {"fail_closed_on_seal_break": True, "allow_local_cli_root": True},
-            "audit": {"sqlite_path": "audit/events.sqlite"},
-        }
+        return {**_DEFAULT_CONFIG, "data_root": str(root)}
     with path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
-    data.setdefault("data_root", str(root))
-    return data
+    out = {**_DEFAULT_CONFIG, **data}
+    for key in ("identify", "enroll", "guest", "security", "audit"):
+        base = dict(_DEFAULT_CONFIG.get(key) or {})
+        base.update(dict(data.get(key) or {}))
+        out[key] = base
+    out.setdefault("data_root", str(root))
+    idc = out["identify"]
+    if "accept_threshold" not in (data.get("identify") or {}) and "threshold" in idc:
+        idc.setdefault("accept_threshold", idc.get("threshold", 0.75))
+    return out
 
 
 def ensure_layout(root: Path | None = None) -> Path:
@@ -66,7 +88,6 @@ def ensure_layout(root: Path | None = None) -> Path:
     index = root / "gallery" / "index.json"
     if not index.exists():
         index.write_text('{"version": 1, "people": {}}\n', encoding="utf-8")
-    # Copy stock templates into data root if missing
     src_tpl = _PKG_ROOT / "templates"
     dst_tpl = root / "templates"
     if src_tpl.is_dir():

@@ -1,18 +1,26 @@
 # VoxMetrica runtime config (committed defaults — no personal data)
 version: 1
+production: false
 # Use "data" for package-local store, or set VOXMETRICA_ROOT / absolute path
 data_root: data
 
 identify:
+  accept_threshold: 0.75
+  clarify_threshold: 0.55
+  min_margin: 0.05
+  min_seconds: 1.5
+  # legacy alias (still read if accept_threshold absent)
   threshold: 0.75
   backend: auto            # auto | speechbrain | hash_stub
   speechbrain_source: speechbrain/spkrec-ecapa-voxceleb
   claim_ttl_seconds: 900
 
 enroll:
-  min_clips: 1
+  min_clips: 3
   delete_raw_after_embed: true
   default_template: full-adult
+  allow_self_enroll_when_unknown: true
+  root_approve_required: false
 
 guest:
   template: guest-default

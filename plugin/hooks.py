@@ -9,9 +9,9 @@ _PKG = Path(__file__).resolve().parents[1]
 if str(_PKG) not in sys.path:
     sys.path.insert(0, str(_PKG))
 
-from lib.audit import AuditLog  # noqa: E402
-from lib.capabilities import load_capabilities, summarize_for_model  # noqa: E402
-from lib.claims import ClaimStore  # noqa: E402
+from voxmetrica.audit import AuditLog  # noqa: E402
+from voxmetrica.capabilities import load_capabilities, summarize_for_model  # noqa: E402
+from voxmetrica.claims import ClaimStore  # noqa: E402
 
 
 def inject_speaker_context(

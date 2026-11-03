@@ -6,12 +6,12 @@ from pathlib import Path
 from typing import Any
 
 from .audit import AuditLog
-from .capabilities import load_capabilities, save_capabilities, load_template, check_resource
+from .capabilities import check_resource, load_capabilities, load_template, save_capabilities
 from .embedder import Embedder
 from .gallery import Gallery
 from .identify import identify_audio
 from .paths import ensure_layout, get_data_root, load_config
-from .seal import Seal, SealError
+from .seal import Seal
 
 
 class ControlPlane:
@@ -33,6 +33,7 @@ class ControlPlane:
             backend = Embedder(self.root).resolve_backend()
         except Exception as e:
             backend = f"error:{e}"
+        idc = cfg.get("identify") or {}
         return {
             "ok": True,
             "data_root": str(self.root),
@@ -40,7 +41,13 @@ class ControlPlane:
             "people_count": len(people),
             "people": people,
             "embed_backend": backend,
-            "threshold": cfg.get("identify", {}).get("threshold"),
+            "threshold": idc.get("accept_threshold", idc.get("threshold")),
+            "thresholds": {
+                "accept": idc.get("accept_threshold", idc.get("threshold")),
+                "clarify": idc.get("clarify_threshold"),
+                "min_margin": idc.get("min_margin"),
+            },
+            "production": bool(cfg.get("production", False)),
             "config_version": cfg.get("version"),
         }
 
@@ -197,7 +204,11 @@ class ControlPlane:
             self.audit.log(
                 "identify",
                 claim.get("speaker_id"),
-                {"confidence": claim.get("confidence"), "matched": claim.get("matched")},
+                {
+                    "confidence": claim.get("confidence"),
+                    "matched": claim.get("matched"),
+                    "outcome": claim.get("outcome"),
+                },
             )
         caps = load_capabilities(claim.get("speaker_id") or "guest", self.root)
         claim["capabilities_summary"] = {

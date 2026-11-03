@@ -6,8 +6,8 @@ import time
 from pathlib import Path
 from typing import Any
 
-from .paths import get_data_root, load_config
 from .capabilities import load_template, save_capabilities
+from .paths import get_data_root, load_config
 
 
 class Gallery:
