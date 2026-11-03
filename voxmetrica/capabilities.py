@@ -125,6 +125,10 @@ def summarize_for_model(caps: dict[str, Any], claim: dict[str, Any] | None = Non
     if claim:
         lines.append(f"confidence: {claim.get('confidence', 'n/a')}")
         lines.append(f"is_root: {bool(claim.get('is_root'))}")
+        if claim.get("outcome"):
+            lines.append(f"outcome: {claim.get('outcome')}")
+        if claim.get("needs_clarify"):
+            lines.append("needs_clarify: true")
     res = caps.get("resources") or {}
     tools = res.get("tools") or {}
     if tools.get("allow"):

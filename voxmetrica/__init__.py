@@ -6,15 +6,17 @@ from .capabilities import check_resource, load_capabilities, save_capabilities
 from .claims import ClaimStore, build_claim_v1
 from .clarify import ClarifyStore, begin_clarify, clarify_resolve
 from .control_plane import ControlPlane
+from .edge_client import EdgeClient, identify_clip
 from .enroll_flow import self_enroll, slugify_speaker_id
 from .gallery import Gallery
 from .identify import embed_file, identify_audio, identify_embedding
 from .paths import ensure_layout, get_data_root, load_config, package_root
+from .policy import effective_speaker_id, gate_tool
 from .score import cosine, decide_outcome, rank_scores
 from .seal import Seal, SealError
 from .sync import export_sync_package, import_sync_package
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "get_data_root",
@@ -47,5 +49,9 @@ __all__ = [
     "speaker_centroid",
     "export_sync_package",
     "import_sync_package",
+    "gate_tool",
+    "effective_speaker_id",
+    "EdgeClient",
+    "identify_clip",
     "__version__",
 ]

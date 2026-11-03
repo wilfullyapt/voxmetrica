@@ -162,3 +162,54 @@ CHECK = {
         "required": ["speaker_id", "kind", "name"],
     },
 }
+
+CLARIFY_RESOLVE = {
+    "name": "voxmetrica_clarify_resolve",
+    "description": (
+        "Resolve a pending gray-zone identity: choice is a candidate speaker_id or 'guest'. "
+        "Binds the session claim; optional template adapt on confirm."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "session_id": {"type": "string"},
+            "choice": {"type": "string", "description": "speaker_id from candidates, or guest"},
+            "adapt": {"type": "boolean", "description": "Append query emb on confirm (default true)"},
+        },
+        "required": ["choice"],
+    },
+}
+
+ADAPT = {
+    "name": "voxmetrica_adapt",
+    "description": "ROOT ONLY. Append a confirmed embedding from audio for a speaker (template adaptation).",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "speaker_id": {"type": "string"},
+            "audio_path": {"type": "string"},
+            "reason": {"type": "string"},
+        },
+        "required": ["speaker_id", "audio_path"],
+    },
+}
+
+SYNC_EXPORT = {
+    "name": "voxmetrica_sync_export",
+    "description": "ROOT ONLY. Export gallery signatures as voxmetrica-sync-v1 to a directory path.",
+    "parameters": {
+        "type": "object",
+        "properties": {"dest": {"type": "string", "description": "Destination directory"}},
+        "required": ["dest"],
+    },
+}
+
+SYNC_IMPORT = {
+    "name": "voxmetrica_sync_import",
+    "description": "ROOT ONLY. Import a voxmetrica-sync-v1 package (embeddings+meta+caps).",
+    "parameters": {
+        "type": "object",
+        "properties": {"src": {"type": "string", "description": "Package directory"}},
+        "required": ["src"],
+    },
+}

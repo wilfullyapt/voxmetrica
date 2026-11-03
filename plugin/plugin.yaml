@@ -1,8 +1,9 @@
 name: voxmetrica
-version: 0.1.0
+version: 0.3.0
 description: >
-  VoxMetrica — family vocal biometrics for Hermes. Per-voice capability memory,
-  immutable root control plane, enroll/identify, and turn-time identity injection.
+  VoxMetrica — family vocal biometrics for Hermes/Portunus. Per-voice capability
+  memory, immutable root control plane, dual-band identify, clarify/adapt/sync,
+  turn-time inject + tool gate.
 author: VoxMetrica contributors
 provides_tools:
   - voxmetrica_status
@@ -13,6 +14,11 @@ provides_tools:
   - voxmetrica_get_capabilities
   - voxmetrica_set_capabilities
   - voxmetrica_check
+  - voxmetrica_clarify_resolve
+  - voxmetrica_adapt
+  - voxmetrica_sync_export
+  - voxmetrica_sync_import
 provides_hooks:
   - pre_llm_call
+  - pre_tool_call
   - post_tool_call
