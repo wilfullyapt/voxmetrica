@@ -7,6 +7,7 @@ Family **vocal biometrics** + **per-voice capability memory** for Hermes Agent.
 - **Plugin** — tools, hooks, skill under `plugin/`
 - **Runtime data** — `./data` (or `VOXMETRICA_ROOT`); gitignored
 - **Claim v1** — `matched | clarify | unknown` with dual threshold + margin
+- **Clarify / adapt / sync** — session resolve, template adaptation, `voxmetrica-sync-v1`
 
 ## Install
 
@@ -39,6 +40,14 @@ voxmetrica enroll \
 voxmetrica status
 voxmetrica whoami --audio /path/to/clip.wav
 voxmetrica check --speaker-id adult1 --kind tools --name terminal
+
+# After a clarify claim (session pending):
+voxmetrica clarify-resolve --session-id default --choice adult1
+
+# Confirmed template adapt + signature sync
+voxmetrica adapt --speaker-id adult1 --audio /path/to/clip.wav
+voxmetrica sync-export --dest /tmp/vox-sync
+voxmetrica sync-import --src /tmp/vox-sync
 ```
 
 `hash_stub` embeddings are **dev only**. Set `production: true` in config to refuse them.

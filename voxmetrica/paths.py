@@ -32,6 +32,15 @@ _DEFAULT_CONFIG: dict[str, Any] = {
     "guest": {"template": "guest-default"},
     "security": {"fail_closed_on_seal_break": True, "allow_local_cli_root": True},
     "audit": {"sqlite_path": "audit/events.sqlite"},
+    "adapt": {
+        "enabled": True,
+        "require_confirm": True,
+        "silent_enabled": False,
+        "silent_min_score": 0.85,
+        "silent_min_margin": 0.10,
+        "max_embeddings_per_speaker": 20,
+    },
+    "sync": {"hub_url": None},
 }
 
 
@@ -63,7 +72,7 @@ def load_config(root: Path | None = None) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f) or {}
     out = {**_DEFAULT_CONFIG, **data}
-    for key in ("identify", "enroll", "guest", "security", "audit"):
+    for key in ("identify", "enroll", "guest", "security", "audit", "adapt", "sync"):
         base = dict(_DEFAULT_CONFIG.get(key) or {})
         base.update(dict(data.get(key) or {}))
         out[key] = base
@@ -81,6 +90,7 @@ def ensure_layout(root: Path | None = None) -> Path:
         "gallery",
         "templates",
         "claims",
+        "clarify",
         "enroll_raw",
         "audit",
     ):

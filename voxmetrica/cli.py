@@ -61,6 +61,22 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--kind", default="tools")
     c.add_argument("--name", required=True)
 
+    cr = sub.add_parser("clarify-resolve", help="Resolve pending clarify session")
+    cr.add_argument("--session-id", required=True)
+    cr.add_argument("--choice", required=True, help="speaker_id | guest")
+    cr.add_argument("--no-adapt", action="store_true")
+
+    ad = sub.add_parser("adapt", help="Append embedding from audio (confirmed)")
+    ad.add_argument("--speaker-id", required=True)
+    ad.add_argument("--audio", required=True)
+    ad.add_argument("--reason", default="manual")
+
+    sx = sub.add_parser("sync-export", help="Export voxmetrica-sync-v1 package")
+    sx.add_argument("--dest", required=True)
+
+    si = sub.add_parser("sync-import", help="Import voxmetrica-sync-v1 package")
+    si.add_argument("--src", required=True)
+
     args = p.parse_args(argv)
     root = Path(args.root).resolve() if args.root else get_data_root()
     ensure_layout(root)
@@ -138,6 +154,41 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.cmd == "check":
         _print(cp.check(args.speaker_id, args.kind, args.name))
+        return 0
+    if args.cmd == "clarify-resolve":
+        from voxmetrica.clarify import clarify_resolve
+
+        _print(
+            clarify_resolve(
+                args.session_id,
+                args.choice,
+                root=root,
+                adapt=not args.no_adapt,
+            )
+        )
+        return 0
+    if args.cmd == "adapt":
+        from voxmetrica.adapt import adapt_from_audio
+
+        _print(
+            adapt_from_audio(
+                args.speaker_id,
+                args.audio,
+                root=root,
+                confirmed=True,
+                reason=args.reason,
+            )
+        )
+        return 0
+    if args.cmd == "sync-export":
+        from voxmetrica.sync import export_sync_package
+
+        _print(export_sync_package(root, args.dest))
+        return 0
+    if args.cmd == "sync-import":
+        from voxmetrica.sync import import_sync_package
+
+        _print(import_sync_package(args.src, root))
         return 0
     return 1
 
