@@ -15,12 +15,6 @@ from voxmetrica.claims import ClaimStore  # noqa: E402
 from voxmetrica.gallery import Gallery  # noqa: E402
 
 
-def _unit(seed: int) -> np.ndarray:
-    rng = np.random.RandomState(seed)
-    v = rng.randn(192).astype(np.float32)
-    return v / (np.linalg.norm(v) + 1e-9)
-
-
 def test_enroll_tool_denied_without_root_claim(data_root: Path, monkeypatch):
     monkeypatch.setenv("VOXMETRICA_ROOT", str(data_root))
     ClaimStore(data_root).put(
