@@ -81,7 +81,7 @@ claim = client.identify("/tmp/clip.wav", session_id="door1")
 print(client.badge(claim))
 ```
 
-## Security notes
+## Layout
 
 ```
 voxmetrica/
