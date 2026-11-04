@@ -60,13 +60,25 @@ voxmetrica sync-import --src /tmp/vox-sync
 | Clarify | 0.55–0.75 or thin margin | `clarify` |
 | Reject | < 0.55 | `unknown` / guest |
 
-## Install Hermes plugin
+## Install Hermes / Portunus plugin
 
 ```bash
-mkdir -p ~/.hermes/plugins
+pip install -e .
+mkdir -p ~/.hermes/plugins   # or profiles/portunus plugins path
 ln -sfn "$(pwd)/plugin" ~/.hermes/plugins/voxmetrica
-hermes plugins enable voxmetrica
-# restart gateway if needed
+hermes -p portunus plugins enable voxmetrica   # when available
+# gateway restart from SSH after enable
+```
+
+**Turn policy:** `pre_llm_call` injects claim + caps; `pre_tool_call` gates tools (guest/clarify cannot hit `terminal`; root-only mutations ignore forged `is_root_claim` args).
+
+**Edge doorways:**
+
+```python
+from voxmetrica import EdgeClient
+client = EdgeClient(ingress="narthex")  # or mobile-ami
+claim = client.identify("/tmp/clip.wav", session_id="door1")
+print(client.badge(claim))
 ```
 
 ## Layout

@@ -6,7 +6,7 @@ import logging
 from pathlib import Path
 
 from . import schemas, tools
-from .hooks import audit_tool_call, inject_speaker_context
+from .hooks import audit_tool_call, gate_tool_call, inject_speaker_context
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ def _slash_family(raw: str) -> str:
             "  /vox status\n"
             "  /vox whoami [audio_path]\n"
             "  /vox list\n"
-            "Root ops use tools or: python scripts/voxmetrica_cli.py …"
+            "Root ops use tools or: voxmetrica CLI"
         )
     if cmd == "status":
         return tools.status({})
@@ -82,8 +82,36 @@ def register(ctx):
         schema=schemas.CHECK,
         handler=tools.check,
     )
+    ctx.register_tool(
+        name="voxmetrica_clarify_resolve",
+        toolset="voxmetrica",
+        schema=schemas.CLARIFY_RESOLVE,
+        handler=tools.clarify_resolve_tool,
+    )
+    ctx.register_tool(
+        name="voxmetrica_adapt",
+        toolset="voxmetrica",
+        schema=schemas.ADAPT,
+        handler=tools.adapt_tool,
+    )
+    ctx.register_tool(
+        name="voxmetrica_sync_export",
+        toolset="voxmetrica",
+        schema=schemas.SYNC_EXPORT,
+        handler=tools.sync_export_tool,
+    )
+    ctx.register_tool(
+        name="voxmetrica_sync_import",
+        toolset="voxmetrica",
+        schema=schemas.SYNC_IMPORT,
+        handler=tools.sync_import_tool,
+    )
 
     ctx.register_hook("pre_llm_call", inject_speaker_context)
+    try:
+        ctx.register_hook("pre_tool_call", gate_tool_call)
+    except Exception as e:
+        logger.warning("pre_tool_call hook not supported by host: %s — tools still self-gate root ops", e)
     ctx.register_hook("post_tool_call", audit_tool_call)
 
     try:
@@ -101,4 +129,4 @@ def register(ctx):
                 except Exception as e:
                     logger.debug("register_skill %s: %s", child.name, e)
 
-    logger.info("VoxMetrica plugin registered")
+    logger.info("VoxMetrica plugin registered (gate + clarify/adapt/sync tools)")
